@@ -2,22 +2,21 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
-type Expense = {
-  id: string;
-  title: string;
-  amount: number;
-};
-
-const fakeExpenses: Expense[] = [
-  { id: "1", title: "Groceries", amount: 50 },
-  { id: "2", title: "Utilities", amount: 100 },
-  { id: "3", title: "Rent", amount: 1000 },
-];
-
-const createPostSchema = z.object({
+const expenseSchema = z.object({
+  id: z.number().int().positive().min(1),
   title: z.string().min(3).max(100),
   amount: z.number().int().positive(),
 });
+
+type Expense = z.infer<typeof expenseSchema>;
+
+const createPostSchema = expenseSchema.omit({ id: true });
+
+const fakeExpenses: Expense[] = [
+  { id: 1, title: "Groceries", amount: 50 },
+  { id: 2, title: "Utilities", amount: 100 },
+  { id: 3, title: "Rent", amount: 1000 },
+];
 
 export const expenseRoute = new Hono()
   .get("/", (c) => {
@@ -32,7 +31,7 @@ export const expenseRoute = new Hono()
     // console.log(expense);
 
     fakeExpenses.push({
-      id: (fakeExpenses.length + 1).toString(),
+      id: fakeExpenses.length + 1,
       title: expense.title,
       amount: expense.amount,
     });
@@ -41,4 +40,33 @@ export const expenseRoute = new Hono()
       message: "Expense created",
       expense,
     });
+  })
+  .get("/:id{[0-9]+}", (c) => {
+    //   const {id} = c.req.param()  //another way to get id from request url
+
+    //for the sake of use here - we need always integer id
+    // in url use regex to ensure that id entered is integer (anytihng else will return 404)
+
+    const id = Number.parseInt(c.req.param("id")); //get id from request url and convert it to number
+
+    const expense = fakeExpenses.find((expense) => expense.id === id);
+
+    if (!expense) {
+      return c.notFound();
+    }
+
+    return c.json({ expense });
+  })
+  .delete("/:id{[0-9]+}", (c) => {
+    const id = Number.parseInt(c.req.param("id"));
+
+    const index = fakeExpenses.findIndex((expense) => expense.id === id);
+
+    if (index === -1) {
+      return c.notFound();
+    }
+
+    fakeExpenses.splice(index, 1);
+
+    return c.json({ fakeExpenses });
   });
