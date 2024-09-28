@@ -7,9 +7,10 @@ const app = new Hono();
 
 app.use(logger());
 
-app.route("/api/expenses", expenseRoute);
+const apiRoutes = app.basePath("/api").route("/expenses", expenseRoute);
 
 app.get("*", serveStatic({ root: "./frontend/dist" }));
 app.get("*", serveStatic({ root: "./frontend/dist/index.html" }));
 
 export default app; // for Cloudflare Workers or Bun
+export type ApiRoutes = typeof apiRoutes; // for TypeScript
