@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { getUser } from "../kinde";
 
 const expenseSchema = z.object({
   id: z.number().int().positive().min(1),
@@ -19,11 +20,11 @@ const fakeExpenses: Expense[] = [
 ];
 
 export const expenseRoute = new Hono()
-  .get("/", (c) => {
+  .get("/", getUser, (c) => {
     return c.json({ expenses: fakeExpenses });
   })
 
-  .post("/", zValidator("json", createPostSchema), async (c) => {
+  .post("/", getUser, zValidator("json", createPostSchema), async (c) => {
     const expense = await c.req.valid("json");
     // const expense = createPostSchema.parse(data);
 
@@ -41,7 +42,7 @@ export const expenseRoute = new Hono()
       expense,
     });
   })
-  .get("/:id{[0-9]+}", (c) => {
+  .get("/:id{[0-9]+}", getUser, (c) => {
     //   const {id} = c.req.param()  //another way to get id from request url
 
     //for the sake of use here - we need always integer id
@@ -58,7 +59,7 @@ export const expenseRoute = new Hono()
     return c.json({ expense });
   })
 
-  .get("/total-spent", (c) => {
+  .get("/total-spent", getUser, (c) => {
     const totalSpent = fakeExpenses.reduce(
       (total, expense) => total + expense.amount,
       0
@@ -66,7 +67,7 @@ export const expenseRoute = new Hono()
     return c.json({ totalSpent });
   })
 
-  .delete("/:id{[0-9]+}", (c) => {
+  .delete("/:id{[0-9]+}", getUser, (c) => {
     const id = Number.parseInt(c.req.param("id"));
 
     const index = fakeExpenses.findIndex((expense) => expense.id === id);
