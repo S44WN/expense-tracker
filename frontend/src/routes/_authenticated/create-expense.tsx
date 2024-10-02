@@ -1,22 +1,22 @@
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
-import { useForm } from '@tanstack/react-form'
-import { api } from '@/lib/api'
+import { useForm } from "@tanstack/react-form";
+import { api } from "@/lib/api";
 
-export const Route = createFileRoute('/_authenticated/create-expense')({
+export const Route = createFileRoute("/_authenticated/create-expense")({
   component: CreateExpense,
-})
+});
 
 function CreateExpense() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const form = useForm({
     defaultValues: {
-      title: '',
-      amount: 0,
+      title: "",
+      amount: "",
     },
 
     onSubmit: async ({ value }) => {
@@ -26,16 +26,16 @@ function CreateExpense() {
 
       const response = await api.expenses.$post({
         json: value,
-      })
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to create expense')
+        throw new Error("Failed to create expense");
       }
       // console.log(response);
 
-      navigate({ to: '/expenses' })
+      navigate({ to: "/expenses" });
     },
-  })
+  });
 
   return (
     <div className="p-2 max-w-2xl m-auto">
@@ -44,9 +44,9 @@ function CreateExpense() {
       <form
         className="mt-4"
         onSubmit={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          form.handleSubmit()
+          e.preventDefault();
+          e.stopPropagation();
+          form.handleSubmit();
         }}
       >
         <form.Field
@@ -64,7 +64,7 @@ function CreateExpense() {
                 type="text"
               />
               {field.state.meta.isTouched && field.state.meta.errors.length ? (
-                <em>{field.state.meta.errors.join(', ')}</em>
+                <em>{field.state.meta.errors.join(", ")}</em>
               ) : null}
             </>
           )}
@@ -79,12 +79,12 @@ function CreateExpense() {
                 name={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(Number(e.target.value))}
+                onChange={(e) => field.handleChange(e.target.value)}
                 placeholder="Enter an amount"
                 type="number"
               />
               {field.state.meta.isTouched && field.state.meta.errors.length ? (
-                <em>{field.state.meta.errors.join(', ')}</em>
+                <em>{field.state.meta.errors.join(", ")}</em>
               ) : null}
             </>
           )}
@@ -94,11 +94,11 @@ function CreateExpense() {
           selector={(state) => [state.canSubmit, state.isSubmitting]}
           children={([canSubmit, isSubmitting]) => (
             <Button type="submit" disabled={!canSubmit} className="mt-4">
-              {isSubmitting ? 'Submiting...' : 'Submit'}
+              {isSubmitting ? "Submiting..." : "Submit"}
             </Button>
           )}
         />
       </form>
     </div>
-  )
+  );
 }
